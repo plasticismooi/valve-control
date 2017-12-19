@@ -1,0 +1,14 @@
+
+  Mainswitch: Turn system on/off
+  Servo: 180Angle Motor, Attached to hatch
+  Potentiometer: Open and closed the hatch
+  Button: Switch from manual to automatic
+  FlowEngine:
+  light:
+    Yellow: Power on arduino
+    Green: Power on system
+    White: Hatchsystem works Automaticlly
+    Blue: Hatchsystem works on Manual
+    Groen: Hatch is open
+    Rood: Hatch is closed
+  Time = miliseconds.

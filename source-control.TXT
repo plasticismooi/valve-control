@@ -1,0 +1,7 @@
+  by:Jelte en Tom, Polytential.
+  5-12-2017: Add LEDs - Servo close by Low mainswitch
+  6-12-2017: Clean Code - hardwarebuilding
+  12-12-2017: FlowEngine
+  15-12-2017: Remove FlowEngine
+  18-12-2017: cleancode Ferry, (comments, Typefouten, functie checkservoposition verdelen in ziek veel mooie code dingen, wit regels)
+  19-12-2017: versie Github

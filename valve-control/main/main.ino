@@ -1,27 +1,3 @@
-/*
-  by:Jelte en Tom en Ferry, Polytential.
-
-  5-12-2017: Add LEDs - Servo close by Low mainswitch
-  6-12-2017: Clean Code - hardwarebuilding
-  12-12-2017: FlowEngine
-  15-12-2017: Remove FlowEngine
-  18-12-2017: cleancode Ferry, (comments, Typefouten, functie checkservoposition verdelen in ziek veel mooie code dingen, wit regels)
-  19-12-2017: versie Github
-
-  Mainswitch: Turn system on/off
-  Servo: 180Angle Motor, Attached to hatch
-  Potentiometer: Open and closed the hatch
-  Button: Switch from manual to automatic
-  FlowEngine:
-  light:
-    Yellow: Power on arduino
-    Green: Power on system
-    White: Hatchsystem works Automaticlly
-    Blue: Hatchsystem works on Manual
-    Groen: Hatch is open
-    Rood: Hatch is closed
-  Time = miliseconds.
-*/
 
 //____________________________library_________________________
 
