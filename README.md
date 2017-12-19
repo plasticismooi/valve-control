@@ -1,2 +1,1 @@
-Jelte's beaste code
-feeery moet zn wous houden
+To control the amount of plastic flakes that is fed to the confeyorbelt, a valve is added to control this flow. This code controls the movement of this valve. The interval of the valve and the maxiamal angle can be adjusted within the code.
