@@ -1,5 +1,6 @@
 //____________________________library_________________________
 #include <Servo.h>
+Servo myservo1;
 
 // ____________________________Config Settings________________
 int ServoStartPosition = 0;
@@ -9,13 +10,15 @@ int MaxAngleServoAutomatisch = 13 ; //Maximal angle of servo (max: 30)
 int MaxAngleServoPot = 50;
 int LedIndicatorOpenHatchAngle = 5;
 int FlowEngineProcent = 100;
-bool PrintHatchInfo = true;
+bool PrintHatchInfo = false;
 bool PrintAngleServoInfo = false;
 
 // ____________________________Variables___________________________
 int PositionServo;
 int buttonState;
 int mainSwitchState;
+int pos;
+
 
 //_____________________________Port declaration_________________
 int PortPotentiometer = 1;
@@ -25,7 +28,7 @@ int ClosedLEDIndicator = 13;
 int OpenLEDIndicator = 12;
 int portMainSwitch = 23;
 int ServoPowerHighOutput = 10;
-Servo myservo1;
+int PortServo1 = 9;
 
 //Function for turn on/off the Hatchindication LED
 int CheckServoPosition(int ServoStartPosition) {
@@ -37,24 +40,30 @@ int CheckServoPosition(int ServoStartPosition) {
   }
 }
 
-int PrintValvePositionOpen{
+/* int PrintValvePositionOpen() {
   Serial.println("Valve is Open");
 }
-int PrintValvePositionClosed{
+int PrintValvePositionClosed() {
   Serial.println("Valve is Closed");
 }
-
-void SetLedsToPositionClosed{
+*/
+void SetLedsToPositionClosed() {
   digitalWrite(ClosedLEDIndicator, HIGH);
   digitalWrite(OpenLEDIndicator, LOW);
 }
-void SetLedsToPositionOpen{
+void SetLedsToPositionOpen() {
   digitalWrite(ClosedLEDIndicator, LOW);
   digitalWrite(OpenLEDIndicator, HIGH);
 }
+void SetLedValveOff() {
+  digitalWrite (ClosedLEDIndicator, LOW);
+  digitalWrite (OpenLEDIndicator, LOW);
+  digitalWrite (AutomaticModeLED, LOW);
+}
+
 
 int PrintAngleServo(int PositionServo) { //naam met servo info high toevoegen
-  if (PrintAngleServoInfo == HIGH) {  //typefoutje
+  if (PrintAngleServoInfo == HIGH) { 
     Serial.println(PositionServo);
     delay(1000);
   }
@@ -77,20 +86,20 @@ void setup() {
 void loop() {
   mainSwitchState = digitalRead(portMainSwitch);
 
+//_____________________________Mainswitch____________
   if (mainSwitchState == HIGH) {
     buttonState = digitalRead(PortButton);
     PrintAngleServo(PositionServo);
 
-    bool PositionIndicator = CheckServoPosition(PositionServo);
+  bool PositionIndicator = CheckServoPosition(PositionServo);
     if (PositionIndicator == true) {
       SetLedsToPositionOpen();
-      PrintValvePositionOpen();
+//      PrintValvePositionOpen();
     }
     else {
       SetLedsToPositionClosed();
-      PrintValvePositionClosed();
+  //    PrintValvePositionClosed();
     }
-
 
     if (buttonState == HIGH) {
       digitalWrite(AutomaticModeLED, LOW);
@@ -99,21 +108,22 @@ void loop() {
       myservo1.write(PositionServo);
       delay(150);
     }
-    //Goes in the automatic pilot loop
+    
+//_____________________________Goes in the automatic pilot loop
     else {
       digitalWrite(AutomaticModeLED, HIGH);
-      for (ServoStartPosition = 0; ServoStartPosition < MaxAngleServoAutomatisch; ServoStartPosition += 1) {
-        myservo1.write(ServoStartPosition);
+      Serial.println(pos);
+      for (pos = 0; pos < MaxAngleServoAutomatisch; pos += 1) {
+        myservo1.write(pos);
         delay(15);
       }
       delay (HatchOpenTime);
 
-      CheckServoPosition(ServoStartPosition);
-
-      for (ServoStartPosition = MaxAngleServoAutomatisch; ServoStartPosition > 0; ServoStartPosition -= 1) {
-        myservo1.write(ServoStartPosition);
-        CheckServoPosition(ServoStartPosition);
+      for (pos = MaxAngleServoAutomatisch; pos > 0; pos -= 1) {
+        myservo1.write(pos);
+        CheckServoPosition(PositionServo);
         delay(15);
+        
       }
       delay (HatchClosingTime);
     }
@@ -121,7 +131,8 @@ void loop() {
 
   //Turn Servo to start position.
   else {
-    myservo1.write(ServoStartPosition);
+    myservo1.write(0);
+    SetLedValveOff();
   }
 }
 
