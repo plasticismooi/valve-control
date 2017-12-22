@@ -9,25 +9,25 @@ int TimeValveIsClosed = 2200;
 int MaxAngleServoAutomatisch = 20 ; //Maximal angle of servo (max: 30)
 int MaxAngleServoPot = 50;
 int ThresholdValveOpen = 5;
-bool PrintHatchInfo = false;
-bool PrintAngleServoInfo = false;
+bool PrintHatchInfo = true;
+bool PrintAngleServoInfo = true;
 
 // ____________________________Variables___________________________
 int PositionServo;
 int SwitchToManualMode;
 int mainSwitchState;
 
-//_____________________________Port declaration_________________ 
+//_____________________________Port declaration_________________
 int PortPotentiometer = 1;
-int PortSwitchToManualMode = 2;
-int PortLedAutomaticMode = 3;
+int PortLedValveOpen = 2;
+int PortLedValveClosed = 3;
 int PortLedManualMode = 4;
-int PortLedValveClosed = 11;
-int PortLedValveOpen = 12;
-int PortMainSwitch = 23;
+int PortLedAutomaticMode = 5;
+int PortSwitchToManualMode = 7;
+int PortMainSwitch = 8;
 int PortServo1 = 9;
 
-//Function for turn on/off the Hatchindication LED
+//_____________________________Function______________________________
 int CheckIfValveIsOpen(int PositionServo) {
   if (PositionServo < ThresholdValveOpen) {
     return true;
@@ -43,6 +43,9 @@ int PrintValvePositionOpen() {
 int PrintValvePositionClosed() {
   Serial.println("Valve is Closed");
 }
+int PrintAngleServo(int PositionServo) {
+  Serial.println(PositionServo);
+}
 void SetLedsToPositionClosed() {
   digitalWrite(PortLedValveClosed, HIGH);
   digitalWrite(PortLedValveOpen, LOW);
@@ -51,22 +54,21 @@ void SetLedsToPositionOpen() {
   digitalWrite(PortLedValveClosed, LOW);
   digitalWrite(PortLedValveOpen, HIGH);
 }
-void SetLedValveOff() {
-  digitalWrite (PortLedValveClosed, LOW);
-  digitalWrite (PortLedValveOpen, LOW);
-  digitalWrite (PortLedAutomaticMode, LOW);
+void TurnOffAlLeds() {
+  digitalWrite(PortLedValveClosed, LOW);
+  digitalWrite(PortLedValveOpen, LOW);
+  digitalWrite(PortLedAutomaticMode, LOW);
+  digitalWrite(PortLedManualMode, LOW);
 }
 void SetLedsToAutomaticMode() {
-  digitalWrite (PortLedManualMode, LOW);
-  digitalWrite (PortLedAutomaticMode, HIGH);
+  digitalWrite(PortLedManualMode, LOW);
+  digitalWrite(PortLedAutomaticMode, HIGH);
 }
 void SetLedsToManualMode() {
-  digitalWrite (PortLedManualMode, HIGH);
-  digitalWrite (PortLedAutomaticMode, LOW);
+  digitalWrite(PortLedManualMode, HIGH);
+  digitalWrite(PortLedAutomaticMode, LOW);
 }
-int PrintAngleServo(int PositionServo) {
-  Serial.println(PositionServo);
-}
+
 
 // ____________________________Void_Setup_________________
 void setup() {
@@ -113,9 +115,10 @@ void loop() {
         myservo1.write(ServoStartPosition);
         CheckIfValveIsOpen(ServoStartPosition);
         delay(15);
+
       }
       delay (TimeValveIsOpen);
-      for (ServoStartPosition = PositionServo; ServoStartPosition > 0; ServoStartPosition -= 1) {
+      for (ServoStartPosition = MaxAngleServoAutomatisch; ServoStartPosition > 0; ServoStartPosition -= 1) {
         myservo1.write(ServoStartPosition);
         CheckIfValveIsOpen(ServoStartPosition);
         delay(15);
@@ -124,16 +127,12 @@ void loop() {
     }
   }
 
-//Turn off control valve and leds
+  //Turn off control valve and leds
   else {
     myservo1.write(0);
-    SetLedValveOff();
+    TurnOffAlLeds();
   }
 }
-
-
-
-//hekkieee
 
 
 
