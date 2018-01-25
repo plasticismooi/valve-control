@@ -5,9 +5,10 @@ int StartPositionServo = 0;
 int TimeValveIsOpen = 100;
 int TimeValveIsClosed = 3000;
 int StandbyLedDelay = 80;
-int MaxServoPositionAuto = 30;
+int MaxServoPositionAuto = 13;
 int MaxAngleServoPot = 20;
 int ThresholdValveOpen = 5;
+bool PrintSwitchInfo = false;
 
 int PositionServo;
 int OnSwitchState;
@@ -15,9 +16,9 @@ int SwitchToAutoMode;
 int SwitchToManualMode;
 
 int PortPotentiometer = 1;
-int PortSwitchAutoMode = 2;
+int PortSwitchAutoMode = 4;
 int PortSwitchManualMode = 3;
-int PortOnSwitch = 4;
+int PortOnSwitch = 2;
 int PortLedStandby = 5;
 int PortLedOn = 6;
 int PortLedAuto = 8;
@@ -44,7 +45,6 @@ void SetLedsToPositionOpen() {
   digitalWrite(PortLedValveOpen, HIGH);
 }
 
-
 int SetLedToStandbyMode() {
   digitalWrite(PortLedOn, LOW);
   digitalWrite(PortLedAuto, LOW);
@@ -67,11 +67,12 @@ int  ValveFillStand() {
 }
 int ValveFillStandLed() {
   digitalWrite(PortLedAuto, HIGH);
-  delay(500);
+  delay(1000);
   digitalWrite(PortLedAuto, LOW);
   digitalWrite(PortLedManual, HIGH);
-  delay(500);
+  delay(1000);
   digitalWrite(PortLedManual, LOW);
+
 }
 
 void setup() {
@@ -92,9 +93,11 @@ void setup() {
 void loop() {
 
   OnSwitchState = digitalRead(PortOnSwitch);
-  if (OnSwitchState == HIGH) {
+  if (OnSwitchState == true) {
     digitalWrite (PortLedOn, HIGH);
-    Serial.println("OnSwitchState is high");
+    if (PrintSwitchInfo == true) {
+      Serial.println("OnSwitchState is high");
+    }
     SwitchToManualMode = digitalRead(PortSwitchManualMode);
     SwitchToAutoMode = digitalRead(PortSwitchAutoMode);
 
@@ -107,7 +110,9 @@ void loop() {
 
     if (SwitchToManualMode == HIGH) {
       SetLedsToManualMode();
-      Serial.println("SwitchToManualMode is high");
+      if (PrintSwitchInfo = true) {
+        Serial.println("SwitchToManualMode is high");
+      }
       PositionServo = analogRead(PortPotentiometer);
       PositionServo = map(PositionServo, 0, 1023, 0, MaxAngleServoPot);
       ServoValveControl.write(PositionServo);
@@ -115,9 +120,10 @@ void loop() {
     }
 
     else if (SwitchToAutoMode == HIGH) {
-
       SetLedsToAutoMode();
-      Serial.println("SwitchToAutoMode is high");
+      if (PrintSwitchInfo = true) {
+        Serial.println("SwitchToAutoMode is high");
+      }
       for (PositionServo; PositionServo <= MaxServoPositionAuto; PositionServo += 1) {
         ServoValveControl.write(PositionServo);
         delay(15);
@@ -143,7 +149,9 @@ void loop() {
     }
 
     else {
-      Serial.println("FillStand is HIGH");
+      if (PrintSwitchInfo = true) {
+        Serial.println("FillMode is high");
+      }
       ValveFillStand();
       ValveFillStandLed();
     }
@@ -151,7 +159,10 @@ void loop() {
 
 
   else {
-    Serial.println("OnSwitchState is low" );
+    if (PrintSwitchInfo = true) {
+      Serial.println("OnSwitchState is low" );
+      delay(1000);
+    }
     ServoValveControl.write(StartPositionServo);
     SetLedToStandbyMode();
   }
