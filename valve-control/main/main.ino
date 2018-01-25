@@ -1,33 +1,31 @@
-//____________________________library_________________________
 #include <Servo.h>
-Servo myservo1;
+Servo ServoValveControl;
 
-// ____________________________Config Settings________________
-int ServoStartPosition = 0;
-int TimeValveIsOpen = 1000;
-int TimeValveIsClosed = 2200;
-int MaxAngleServoAutomatisch = 20 ; //Maximal angle of servo (max: 30)
-int MaxAngleServoPot = 50;
+int StartPositionServo = 0;
+int TimeValveIsOpen = 100;
+int TimeValveIsClosed = 3000;
+int StandbyLedDelay = 80;
+int MaxServoPositionAuto = 30;
+int MaxAngleServoPot = 20;
 int ThresholdValveOpen = 5;
-bool PrintHatchInfo = true;
-bool PrintAngleServoInfo = true;
 
-// ____________________________Variables___________________________
 int PositionServo;
+int OnSwitchState;
+int SwitchToAutoMode;
 int SwitchToManualMode;
-int mainSwitchState;
 
-//_____________________________Port declaration_________________
 int PortPotentiometer = 1;
-int PortLedValveOpen = 2;
-int PortLedValveClosed = 3;
-int PortLedManualMode = 4;
-int PortLedAutomaticMode = 5;
-int PortSwitchToManualMode = 7;
-int PortMainSwitch = 8;
-int PortServo1 = 9;
+int PortSwitchAutoMode = 2;
+int PortSwitchManualMode = 3;
+int PortOnSwitch = 4;
+int PortLedStandby = 5;
+int PortLedOn = 6;
+int PortLedAuto = 8;
+int PortLedManual = 7;
+int PortLedValveOpen = 9;
+int PortLedValveClosed = 10;
+int PortServo = 11;
 
-//_____________________________Function______________________________
 int CheckIfValveIsOpen(int PositionServo) {
   if (PositionServo < ThresholdValveOpen) {
     return true;
@@ -37,15 +35,6 @@ int CheckIfValveIsOpen(int PositionServo) {
   }
 }
 
-int PrintValvePositionOpen() {
-  Serial.println("Valve is Open");
-}
-int PrintValvePositionClosed() {
-  Serial.println("Valve is Closed");
-}
-int PrintAngleServo(int PositionServo) {
-  Serial.println(PositionServo);
-}
 void SetLedsToPositionClosed() {
   digitalWrite(PortLedValveClosed, HIGH);
   digitalWrite(PortLedValveOpen, LOW);
@@ -54,85 +43,118 @@ void SetLedsToPositionOpen() {
   digitalWrite(PortLedValveClosed, LOW);
   digitalWrite(PortLedValveOpen, HIGH);
 }
-void TurnOffAlLeds() {
-  digitalWrite(PortLedValveClosed, LOW);
-  digitalWrite(PortLedValveOpen, LOW);
-  digitalWrite(PortLedAutomaticMode, LOW);
-  digitalWrite(PortLedManualMode, LOW);
-}
-void SetLedsToAutomaticMode() {
-  digitalWrite(PortLedManualMode, LOW);
-  digitalWrite(PortLedAutomaticMode, HIGH);
-}
-void SetLedsToManualMode() {
-  digitalWrite(PortLedManualMode, HIGH);
-  digitalWrite(PortLedAutomaticMode, LOW);
-}
 
 
-// ____________________________Void_Setup_________________
+int SetLedToStandbyMode() {
+  digitalWrite(PortLedOn, LOW);
+  digitalWrite(PortLedAuto, LOW);
+  digitalWrite(PortLedManual, LOW);
+}
+int TurnSystemOn() {
+  digitalWrite(PortLedStandby, HIGH);
+}
+int SetLedsToManualMode() {
+  digitalWrite(PortLedManual, HIGH);
+  digitalWrite(PortLedAuto, LOW);
+}
+int SetLedsToAutoMode() {
+  digitalWrite(PortLedManual, LOW);
+  digitalWrite(PortLedAuto, HIGH);
+}
+
+int  ValveFillStand() {
+  ServoValveControl.write(StartPositionServo);
+}
+int ValveFillStandLed() {
+  digitalWrite(PortLedAuto, HIGH);
+  delay(500);
+  digitalWrite(PortLedAuto, LOW);
+  digitalWrite(PortLedManual, HIGH);
+  delay(500);
+  digitalWrite(PortLedManual, LOW);
+}
+
 void setup() {
-  Serial.begin(9600);
-  Serial.println("start systeem");
-
-  myservo1.attach(PortServo1);
-  pinMode(PortSwitchToManualMode, INPUT);
-  pinMode(PortLedAutomaticMode, OUTPUT);
-  pinMode(PortLedManualMode, OUTPUT);
-  pinMode(PortLedValveClosed, OUTPUT);
+  ServoValveControl.attach(PortServo);
+  pinMode(PortSwitchAutoMode, INPUT);
+  pinMode(PortSwitchManualMode, INPUT);
+  pinMode(PortOnSwitch, INPUT);
+  pinMode(PortLedStandby, OUTPUT);
+  pinMode(PortLedOn, OUTPUT);
+  pinMode(PortLedAuto, OUTPUT);
+  pinMode(PortLedManual, OUTPUT);
   pinMode(PortLedValveOpen, OUTPUT);
-  pinMode(PortMainSwitch, INPUT);
+  pinMode(PortLedValveClosed, OUTPUT);
+  Serial.begin(9600);
+  TurnSystemOn();
 }
 
-// ____________________________Void_Loop_____________
 void loop() {
-  mainSwitchState = digitalRead(PortMainSwitch);
-  if (mainSwitchState == HIGH) {
-    SwitchToManualMode = digitalRead(PortSwitchToManualMode);
-    if (PrintAngleServoInfo == true) {
-      PrintAngleServo(PositionServo);
-    }
+
+  OnSwitchState = digitalRead(PortOnSwitch);
+  if (OnSwitchState == HIGH) {
+    digitalWrite (PortLedOn, HIGH);
+    Serial.println("OnSwitchState is high");
+    SwitchToManualMode = digitalRead(PortSwitchManualMode);
+    SwitchToAutoMode = digitalRead(PortSwitchAutoMode);
+
     if (CheckIfValveIsOpen(PositionServo) == true) {
       SetLedsToPositionOpen();
-      PrintValvePositionOpen();
     }
     else {
       SetLedsToPositionClosed();
-      PrintValvePositionClosed();
     }
-    //Entering ManualMode
+
     if (SwitchToManualMode == HIGH) {
       SetLedsToManualMode();
+      Serial.println("SwitchToManualMode is high");
       PositionServo = analogRead(PortPotentiometer);
       PositionServo = map(PositionServo, 0, 1023, 0, MaxAngleServoPot);
-      myservo1.write(PositionServo);
-      delay(150);
+      ServoValveControl.write(PositionServo);
+      delay(15);
     }
-    //Entering AutoPilot
-    else {
-      SetLedsToAutomaticMode();
-      for (ServoStartPosition = 0; ServoStartPosition < MaxAngleServoAutomatisch; ServoStartPosition += 1) {
-        myservo1.write(ServoStartPosition);
-        CheckIfValveIsOpen(ServoStartPosition);
-        delay(15);
 
+    else if (SwitchToAutoMode == HIGH) {
+
+      SetLedsToAutoMode();
+      Serial.println("SwitchToAutoMode is high");
+      for (PositionServo; PositionServo <= MaxServoPositionAuto; PositionServo += 1) {
+        ServoValveControl.write(PositionServo);
+        delay(15);
+        if (CheckIfValveIsOpen(PositionServo) == true) {
+          SetLedsToPositionOpen();
+        }
+        else {
+          SetLedsToPositionClosed();
+        }
       }
       delay (TimeValveIsOpen);
-      for (ServoStartPosition = MaxAngleServoAutomatisch; ServoStartPosition > 0; ServoStartPosition -= 1) {
-        myservo1.write(ServoStartPosition);
-        CheckIfValveIsOpen(ServoStartPosition);
+      for (PositionServo; PositionServo > 0; PositionServo -= 1) {
+        ServoValveControl.write(PositionServo);
         delay(15);
+        if (CheckIfValveIsOpen(PositionServo) == true) {
+          SetLedsToPositionOpen();
+        }
+        else {
+          SetLedsToPositionClosed();
+        }
       }
       delay (TimeValveIsClosed);
     }
+
+    else {
+      Serial.println("FillStand is HIGH");
+      ValveFillStand();
+      ValveFillStandLed();
+    }
   }
 
-  //Turn off control valve and leds
+
   else {
-    myservo1.write(0);
-    TurnOffAlLeds();
+    Serial.println("OnSwitchState is low" );
+    ServoValveControl.write(StartPositionServo);
+    SetLedToStandbyMode();
   }
 }
-
 
 
