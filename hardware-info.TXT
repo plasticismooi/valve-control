@@ -1,9 +1,12 @@
 
   Mainswitch: Turn system on/off
   Servo: 180Angle Motor, Attached to hatch
-  Potentiometer: Open and closed the hatch
-  Button: Switch from manual to automatic
-  FlowEngine:
+  Potentiometer: Open and closed the hatch manually
+  SwitchToAutoMode: Servo Automaticly open and close
+SwitchToManualMode: Servo Manualy open and close
+FillMode: Servo doesn't move
+
+
   light:
     Yellow: Power on arduino
     Green: Power on system
